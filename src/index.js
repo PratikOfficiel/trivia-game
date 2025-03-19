@@ -25,6 +25,7 @@ io.on('connection', socket => {
     console.log('A new player connected ');
 
     socket.on("join", ({playerName, room},callback)=> {
+      console.log("join called")
 
       const {error, newPlayer} = addPlayer({id:socket.id, playerName, room});
 
@@ -127,6 +128,8 @@ io.on('connection', socket => {
         const {correctAnswer} = getGameStatus({
           event: "getAnswer"
         })
+
+        console.log(`correctanswer: ${correctAnswer}`)
 
         io.to(player.room).emit(
           "correctAnswer",

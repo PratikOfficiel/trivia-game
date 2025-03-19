@@ -1,5 +1,3 @@
-const { text } = require("express");
-
 const socket = io();
 const urlSearchParams = new URLSearchParams(window.location.search);
 const playerName = urlSearchParams.get("playerName");
@@ -184,10 +182,11 @@ socket.on("correctAnswer", ({text})=> {
 
   const triviaFormSubmitBtn = document.querySelector(".trivia__submit-btn");
 
-  const answerTemplate = document.querySelector("#trivia-answer-template");
+  const answerTemplate = document.querySelector("#trivia-answer-template").innerHTML;
 
   const template = Handlebars.compile(answerTemplate);
 
+  console.log(`correctAnswer: ${text}`)
   const html = template({
     text
   })
