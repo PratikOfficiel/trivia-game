@@ -9,7 +9,8 @@ const {
   removePlayer,
   getPlayer,
   getAllPlayers
-} = require('../utils/player.js')
+} = require('../utils/player.js');
+const { setGame, setGameStatus, getGameStatus } = require('../utils/game.js');
 
 const app = express();
 
@@ -74,6 +75,66 @@ io.on('connection', socket => {
         callback();
       }
 
+    });
+
+    socket.on("getQuestion",async (message, callback)=>{
+      
+      const {error, player} = getPlayer(socket.id);
+
+      if(error) return callback(error.message);
+
+      if(player) {
+
+        const game = await setGame();
+
+        io.to(player.room).emit("question", {
+          playerName: player.name,
+          ...game.prompt
+        });
+      }
+    })
+
+    socket.on("sendAnswer", (answer, callback)=> {
+
+      const {error, player} = getPlayer(socket.id);
+
+      if(error) return callback(error.message);
+      
+
+      if(player) {
+        const {isRoundOver} = setGameStatus({
+          event:"sendAnswer",
+          playerId: player.id,
+          answer,
+          room: player.room
+        });
+
+        io.to(player.room).emit("answer",{
+          ...formatMessage(player.name, answer),
+          isRoundOver
+        })
+        callback();
+      }
+
+    });
+
+    socket.on("getAnswer", (data, callback)=> {
+      const {error, player} = getPlayer(socket.id);
+
+      if (error) return callback(error.message);
+
+      if(player) {
+        const {correctAnswer} = getGameStatus({
+          event: "getAnswer"
+        })
+
+        io.to(player.room).emit(
+          "correctAnswer",
+          formatMessage(player.name, correctAnswer)
+        )
+
+        callback();
+      }
     })
 })
 
