@@ -23,3 +23,59 @@ socket.emit("join", { playerName, room }, (error) => {
   }
 }
 );
+
+socket.on("message", ({playerName, text, createdAt})=> {
+
+  const chatMessages = document.querySelector(".chat__messages");
+  const messageTemplate = document.querySelector("#message-template").innerHTML;
+
+  const template = Handlebars.compile(messageTemplate)
+
+  const html = template({
+    playerName,
+    text,
+    createdAt: moment(createdAt).format("h:mm a")
+  })
+
+  chatMessages.insertAdjacentHTML("afterbegin",html);
+
+})
+
+socket.on("room", ({room, players})=> {
+
+  const gameInfo = document.querySelector(".game-info");
+
+  const sidebarTemplate = document.querySelector('#game-info-template').innerHTML;
+
+  const template = Handlebars.compile(sidebarTemplate);
+
+  const html = template({
+    room,
+    players
+  })
+
+  gameInfo.innerHTML = html;
+})
+
+const chatForm = document.querySelector(".chat__form");
+
+chatForm.addEventListener("submit",(event)=>{
+  event.preventDefault();
+
+  const chatInput = document.querySelector(".chat__message");
+  const chatButton = document.querySelector(".chat__submit-btn");
+
+  chatButton.setAttribute("disabled","disabled");
+
+  const message = event.target.elements.message.value;
+
+  socket.emit("sendMessage",message, (err)=> {
+
+    chatButton.removeAttribute("disabled");
+    chatInput.value = "";
+    chatInput.focus();
+
+    if (err) return alert(err)
+  })
+
+})
